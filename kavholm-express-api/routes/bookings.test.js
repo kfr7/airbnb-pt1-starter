@@ -87,5 +87,35 @@ describe("GET /bookings/listings", () => {
 })
 
 /************************************** POST bookings/listings/:listingId */
+describe("POST /bookings/listings/:listingId", () => {
+  test("Authed user can book a listing they don't own.", async () => {
+    const listingId = testListingIds[0]
+    let data = { "newBooking": {startDate: new Date("07-05-2021"),
+                                endDate: new Date("07-06-2021"),
+                                guests: 1} }
+    const res = await request(app).post(`/bookings/listings/${listingId}`).set("Content-Type", "application/json").set("authorization", `Bearer ${testTokens.jloToken}`).send(data)
+    expect(res.statusCode).toEqual(201)
 
+    const { booking } = res.body
+
+    booking.totalCost = Number(booking.totalCost)
+
+    expect(booking).toEqual({
+      id: expect.any(Number),
+      startDate: new Date("07-05-2021").toISOString(),
+      endDate: new Date("07-06-2021").toISOString(),
+      paymentMethod: "card",
+      guests: 1,
+      username: "jlo",
+      hostUsername: "lebron",
+      totalCost: expect.any(Number),
+      listingId: expect.any(Number),
+      userId: expect.any(Number),
+      createdAt: expect.any(String),
+    })
+
+
+  })
+
+})
 /************************************** GET bookings/listings/:listingId */

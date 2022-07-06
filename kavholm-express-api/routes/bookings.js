@@ -26,6 +26,21 @@ router.get("/listings", security.requireAuthenticatedUser, async (req, res, next
   }
 })
 
+router.post("/listings/:listingId", 
+  security.requireAuthenticatedUser,
+  permissions.authedUserIsListingOwner,
+async (req, res, next) => {
+  try {
+    const { user, listing } = res.locals
+    const { newBooking } = req.body
+    const booking = await Booking.createBooking(newBooking, listing, user)
+    return res.status(201).json({ booking })
+  } catch (err) {
+    console.log("ENTERED ERROR IN TRY CATCH")
+    next(err)
+  }
+})
+
 router.get(
   "/listings/:listingId/",
   security.requireAuthenticatedUser,

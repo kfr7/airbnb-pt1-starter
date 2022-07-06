@@ -1,6 +1,7 @@
 const db = require("../db")
 const { BadRequestError, NotFoundError } = require("../utils/errors")
 
+
 class Booking {
   static async fetchBookingById(bookingId) {
     // fetch a single booking by its id
@@ -113,6 +114,67 @@ class Booking {
     )
 
     return results.rows
+  }
+
+  static async createBooking(newBooking, listing, user) {
+    let requiredFields = ["startDate", "endDate"]
+    requiredFields.forEach((property) => {
+      if (!newBooking?.hasOwnProperty(property)) {
+        throw new BadRequestError(`Missing ${property} in newBooking.`)
+      }
+    })
+
+
+    const text = `INSERT INTO bookings (payment_method, start_date, end_date, guests, total_cost, listing_id, user_id) 
+    VALUES ($1, $2, $3, $4, $5, $6, $7)
+    RETURNING 
+    id, 
+    start_date AS "startDate", 
+    end_date AS "endDate", 
+    guests, 
+    total_cost AS "totalCost", 
+    user_id AS "userId", 
+    -- subquery to select the username
+    -- of the user who is making the booking
+    (
+      SELECT username
+      FROM users
+      WHERE id = user_id
+    ) AS "username",
+    -- nested subquery to select the username
+    -- of the host user who owns the listing
+    (
+      SELECT users.username
+      FROM users
+      WHERE users.id = (
+        SELECT listings.user_id
+        FROM listings
+        WHERE listings.id = listing_id
+      )
+    ) AS "hostUsername",
+    listing_id AS "listingId",
+    payment_method AS "paymentMethod",
+    created_at AS "createdAt";`
+    let castedStartDate = new Date(newBooking.startDate)
+    let castedEndDate = new Date(newBooking.endDate)
+    let allResults = await db.query(
+      `SELECT * FROM users WHERE username=$1;`,
+      [user.username]
+    )
+    let userId = allResults.rows[0].id
+
+    const values = [
+    newBooking?.paymentMethod || "card",
+    castedStartDate,
+    castedEndDate,
+    newBooking.guests || 1,
+    Math.ceil((castedEndDate-castedStartDate+1)*(listing.price*1.1)),
+    listing.id,
+    userId
+    ]
+
+    const results = await db.query(text, values)
+    return results.rows[0]
   }
 }
 
