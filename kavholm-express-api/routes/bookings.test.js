@@ -113,8 +113,15 @@ describe("POST /bookings/listings/:listingId", () => {
       userId: expect.any(Number),
       createdAt: expect.any(String),
     })
-
-
+  })
+  test("Throws a Bad Request error when user attempts to book their own listing", async () => {
+    const listingId = testListingIds[0]
+    const data = {"newBooking": {startDate: new Date("07-05-2021"),
+                                endDate: new Date("07-06-2021"),
+                                guests: 1} }
+    
+    const res = await request(app).post(`/bookings/listings/${listingId}`).set("Content-Type", "application/json").set("authorization", `Bearer ${testTokens.lebronToken}`).send(data)
+    expect(res.statusCode).toEqual(400)
   })
 
 })
