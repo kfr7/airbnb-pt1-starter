@@ -15,7 +15,6 @@ const authedUserIsListingOwner = async (req, res, next) => {
     const listing = await Listing.fetchListingById(listingId)
 
     if (listing.username !== user.username) {
-      console.log("ENTERED ERROR IN REQUIRE AUTHED USER IS LISTING OWNER (PERMISSIONS.JS)")
       throw new ForbiddenError("User is not allowed to fetch bookings for other users' listings.")
     }
 

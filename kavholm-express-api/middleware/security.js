@@ -38,7 +38,6 @@ const requireAuthenticatedUser = (req, res, next) => {
     if (!user?.username) throw new UnauthorizedError()
     return next()
   } catch (error) {
-    console.log("ENTERED ERROR IN REQUIRE AUTHENTICATED USER (SECURITY.JS)")
     return next(error)
   }
 }

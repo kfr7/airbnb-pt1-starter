@@ -36,7 +36,6 @@ async (req, res, next) => {
     const booking = await Booking.createBooking(newBooking, listing, user)
     return res.status(201).json({ booking })
   } catch (err) {
-    console.log("ENTERED ERROR IN TRY CATCH")
     next(err)
   }
 })
