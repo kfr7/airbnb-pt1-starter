@@ -28,7 +28,7 @@ router.get("/listings", security.requireAuthenticatedUser, async (req, res, next
 
 router.post("/listings/:listingId", 
   security.requireAuthenticatedUser,
-  permissions.authedUserIsListingOwner,
+  permissions.authedUserIsNotListingOwner,
 async (req, res, next) => {
   try {
     const { user, listing } = res.locals
